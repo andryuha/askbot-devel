@@ -100,13 +100,17 @@ var makeKeyHandler = function(key, callback){
 };
 
 
-var setupButtonEventHandlers = function(button, callback){
-    var wrapped_callback = function(e){
-        callback();
-        e.stopImmediatePropagation();
-    };
-    button.keydown(makeKeyHandler(13, wrapped_callback));
-    button.click(wrapped_callback);
+var setupButtonEventHandlers = function(button, callback, stop_propagation){
+    if (stop_propagation){
+        var the_callback = function(e){
+            callback();
+            e.stopImmediatePropagation();
+        };
+    } else {
+        var the_callback = callback;
+    }
+    button.keydown(makeKeyHandler(13, the_callback));
+    button.click(the_callback);
 };
 
 var putCursorAtEnd = function(element){
@@ -1158,7 +1162,7 @@ DropDown.prototype.open = function(){
         this._element.position({
             my: 'left top',
             at: 'left bottom',
-            of: parent_element,
+            of: parent_element
         });
         //this.getContent().getElement().show();
         this.setState('OPEN');
@@ -1238,6 +1242,8 @@ DropDown.prototype.stopClosing = function(){
  */
 DropDown.prototype.reset = function(){
     if (this._element){
+        this._element.unbind('mouseleave');
+        this._element.unbind('mouseenter');
         this._element.hide();
         if (this._content){
             this.getContent().dispose();
@@ -1456,7 +1462,7 @@ DelayedExpando.prototype.createDom = function(){
     var details = this.getDetailContainer();
     this._element.append(details.getElement());
 
-    setupButtonEventHandlers(link, this.getHandler());
+    setupButtonEventHandlers(link, this.getHandler(), true);
 
     this.setState('CLOSED');
 };
